@@ -1,14 +1,50 @@
 {
-  "AWSEBDockerrunVersion": "1",
-  "Image": {
-    "Name": "jenniferwg/timebox",
-    "Update": "true"
-  },
-  "Ports": [
+  "AWSEBDockerrunVersion": "2",
+  "volumes": [
     {
-      "ContainerPort": "3030"
+      "name": "app",
+      "host": {
+        "sourcePath": "/var/app/current/app"
+      }
+    },
+    {
+      "name": "db",
+      "host": {
+        "sourcePath": "/var/app/current/db"
+      }
     }
   ],
-  "Volumes": [],
-  "Logging": "/var/log"
+  "containerDefinitions": [
+    {
+      "name": "app",
+      "image": "jenniferwg/timebox:app",
+      "environment": [],
+      "essential": true,
+      "memory": 128,
+      "portMappings": [{
+        "hostPort": 3030,
+        "containerPort": 3030
+      }],
+      "mountPoints": [
+        {
+          "sourceVolume": "awseb-logs-app",
+          "containerPath": "/var/log"
+        }
+      ]
+    },
+    {
+      "name": "db",
+      "image": "jenniferwg/timebox:db",
+      "essential": true,
+      "memory": 128,
+      "portMappings": [{
+        "hostPort": 3031,
+        "containerPort": 3031
+      }],
+      "links": [
+        "app"
+      ],
+      "mountPoints": [] 
+    }
+  ]
 }
