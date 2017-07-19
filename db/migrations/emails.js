@@ -50,7 +50,8 @@ exports.up = function (knex, Promise) {
 
 exports.down = function (knex, Promise) {
   return Promise.all([
-    knex.raw('DROP TABLE accounts CASCADE') //to drop accounts and dependencies
+    knex.raw('DROP TABLE accounts CASCADE'), //to drop accounts and dependencies
+    knex.raw('DROP TABLE sortedMessages CASCADE')
   ]);
 };
 
