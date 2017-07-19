@@ -1560,6 +1560,10 @@ dns-txt@^2.0.2:
   dependencies:
     buffer-indexof "^1.0.0"
 
+docker-secrets@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/docker-secrets/-/docker-secrets-1.0.2.tgz#bfe0d4b331c33c5a985b245d604df2c3f061e958"
+
 doctrine@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/doctrine/-/doctrine-2.0.0.tgz#c73d8d2909d22291e1a007a395804da8b665fe63"

@@ -1,7 +1,8 @@
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
 const redisClient = require('redis').createClient();
-const CLIENT_ID = process.env.NYLAS_CLIENT_ID || require('../../config/nylasToken.js').CLIENT_ID;
+const secrets = require('docker-secrets');
+const CLIENT_ID = secrets.NYLAS_CLIENT_ID || require('../../config/nylasToken.js').CLIENT_ID;
 
 
 module.exports.verify = (req, res, next) => {

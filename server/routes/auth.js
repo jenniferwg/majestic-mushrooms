@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const middleware = require('../middleware');
 const nylas = require('../../config/nylasToken.js');
-const CLIENT_ID = process.env.NYLAS_CLIENT_ID || nylas.CLIENT_ID;
-const CLIENT_SECRET = process.env.NYLAS_CLIENT_SECRET || nylas.CLIENT_SECRET;
+const secrets = require('docker-secrets');
+const CLIENT_ID = secrets.NYLAS_CLIENT_ID || nylas.CLIENT_ID;
+const CLIENT_SECRET = secrets.NYLAS_CLIENT_SECRET || nylas.CLIENT_SECRET;
 const axios = require('axios');
 const querystring = require('querystring');
 
