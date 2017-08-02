@@ -10,6 +10,7 @@ exports.up = function (knex, Promise) {
       table.string('org_unit', 20).notNullable();
       table.string('sync_state', 20).notNullable();
       table.varchar('cursor');
+      table.timestamp('last_retrieved').nullable();
     }),
     knex.schema.createTableIfNotExists('folders', function(table) {
       table.varchar('folder_id').primary();

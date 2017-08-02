@@ -16,6 +16,12 @@ router.route('/')
     MessageController.getAll(req, res);
   });
 
+router.route('/more/:offset')
+  .get( middleware.auth.verify, (req, res) => {
+    console.log('Inside Routes messages.js GET for /more');
+    MessageController.getMore(req, res);
+  });
+
 router.route('/read/:id')
   .get( middleware.auth.verify, (req, res) => {
     console.log(`Inside Routes messages.js GET for /read/:id `);

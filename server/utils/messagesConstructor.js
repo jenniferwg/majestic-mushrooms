@@ -29,7 +29,7 @@ const colors = {
 
 const createMessages = (messages) => {
   return messages.map(email => {
-    const firstLetter = email.from[0].name[0];
+    const firstLetter = email.from[0] === undefined ? undefined : email.from[0].name[0];
     const stringFrom = firstLetter !== undefined && firstLetter.toUpperCase !== undefined ? 
       firstLetter.toUpperCase() : '';
     const color = colors[stringFrom] !== undefined ? colors[stringFrom] : '#FFC107';
@@ -57,6 +57,7 @@ const createMessages = (messages) => {
     };
   });
 };
+
 const createSortedMessages = (messages) => {
   var sortedMessages = [];
   messages.map(email => {

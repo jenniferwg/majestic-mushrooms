@@ -5,13 +5,16 @@ export const messagesReducer = (state = [], action) => {
     return [
       action,
       ...state
-    ]
+    ];
 
   case 'REMOVE_MESSAGE':
     return state.filter( message => message.id !== action.messageId);
 
-  case 'ADD_MESSAGES':
-    return state.concat(action.messages);
+  case 'APPEND_MESSAGES':
+    return [
+      ...state,
+      ...action.messages
+    ];
   
   case 'SET_MESSAGES':
     return action.messages;

@@ -1,56 +1,43 @@
 const axios = require('axios');
 const bookshelf = require('../../db');
 const models = require('../../db/models');
-const {createMessages, createDatabaseMessageObject, createSortedMessages} = require('../utils/messagesConstructor');
+const { createMessages, createDatabaseMessageObject, createSortedMessages } = require('../utils/messagesConstructor');
+const { fetchMessages, saveMessages } = require('../utils/messageHelpers');
 
 module.exports.getAll = (req, res) => {
   models.Message.query( qb => {
     qb.orderBy('date_received', 'desc');
     qb.where('account_id', '=', req.session.accountId);
+    qb.limit(100);
   }).fetchAll()
-  .then(messages => {
-    let retrievedMessages = null;
-
+  .then( messages => {
     //if no messages stored for new user, retrieve via nylas call
     if (messages.length === 0) {
       console.log(`No messages stored for account ${req.session.accountId}. Retrieving!`);
+
+      //start fetching messages in the background
+      fetchMessages(req);
+
       const authString = 'Bearer ' + req.session.nylasToken;
       return axios.get('https://api.nylas.com/messages?limit=100', {
         headers: { Authorization: authString }
       })
       //retrieved messages, saving to db
       .then(response => {
-        //parse data for sharedTable here
-        retrievedMessages = response.data;
-        const Messages = bookshelf.Collection.extend({
-          model: models.Message
-        });
-        messages = Messages.forge(createMessages(retrievedMessages));
-        return messages.invokeThen('save', null, { method: 'insert' });
-      })
-      .then( (messages) => {
-        const SortedMessages = bookshelf.Collection.extend({
-          model: models.SortedMessage
-        });
-        let sortedMessages = SortedMessages.forge(createSortedMessages(retrievedMessages));
-        sortedMessages.invokeThen('save', null, { method: 'insert' });
-        return messages;
-      })
-      .catch(err => {
-        console.log(err);
-        throw Error;
+        return saveMessages(response.data);
       });
       
     //if messages already exist
     } else { return messages; }
-  }).catch(err => {
+  }).catch( err => {
     console.log(`Error retrieving messages for account ${req.session.accountId}!`);
     res.status(404).send('Message retrieval failed.');
-  }).then(messages => {
+  }).then( messages => {
     console.log(`Messages successfully retrieved for account ${req.session.accountId}. Rerouting!`);
     res.status(200).send(messages);// render to the page
   });
 };
+
 
 module.exports.create = (req, res) => {
   console.log('Inside Messages Controller create(): ', req.body);
@@ -75,10 +62,8 @@ module.exports.create = (req, res) => {
   .catch( err => {
     console.log('Error posting message to Nylas: ', err);
   });
-
-
-
 };
+
 
 module.exports.getOne = (req, res) => {
   models.Message.where({ message_id: req.params.id }).fetch()
@@ -107,6 +92,26 @@ module.exports.getOne = (req, res) => {
   // });
 };
 
+
+module.exports.getMore = (req, res) => {
+  models.Message.query( qb => {
+    qb.offset(req.params.offset).limit(100);
+    qb.orderBy('date_received', 'desc');
+  }).fetchAll().then( messages => {
+    if (messages.length === 0) {
+      return fetchMessages(req);
+    } else { return messages; }
+  })
+  .then( messages => {
+    res.status(200).send(messages);
+  })
+  .catch( err => {
+    console.log('Error retrieving more messages:', err);
+    res.status(500).send(err);
+  });
+};
+
+
 module.exports.update = (req, res) => {
   const authString = 'Bearer ' + req.session.nylasToken;
   let actionObj = {}; //set depending on type, e.g. trash vs. read email
@@ -128,6 +133,7 @@ module.exports.update = (req, res) => {
     res.status(200).send(); 
   });
 };
+
 
 module.exports.deleteOne = (req, res) => {
   models.Message.where({ id: req.params.id }).fetch()

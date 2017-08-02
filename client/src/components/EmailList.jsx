@@ -6,6 +6,8 @@ import { Link, Redirect } from 'react-router-dom';
 import axios from 'axios';
 import { WAIT_IMAGE } from './utils/stylesHelper.js';
 import UserMessage from './UserMessage.jsx';
+import { parseMessage } from './utils/messagesHelper';
+import { today } from './utils/dateTimeHelper';
 
 
 class EmailList extends React.Component {
@@ -15,20 +17,32 @@ class EmailList extends React.Component {
   }
 
   handlePageNav(direction) {
-    const { page, setPage } = this.props;
+    const { page, setPage, setOffset, appendMessages } = this.props;
 
     if (direction === 'back') {
       if (page - 1 > 0) { setPage(page - 1); }
     } else {
-      const maxPage = Math.ceil(this.props.messages.length / 25);
-      if (page + 1 <= maxPage) { setPage(page + 1); }
+      const maxPage = Math.floor(this.props.messages.length / 25);
+      setPage(page + 1); 
+      
+      if (page + 1 > maxPage) {
+        axios.get('api/messages/more/' + this.props.offset).then( messages => {
+          console.log(messages.data, 'MESSAGES.DATA')
+          setOffset(this.props.offset + 100);
+          appendMessages(parseMessage(messages.data, today));
+        });
+      }
     }
   } 
 
   render() {
     const { view, page, areResults } = this.props;
-    const messages = (view === 'Search') ? this.props.searchResults : 
-      this.props.messages.slice(25 * (page - 1), 25 * page);
+    let messages;
+    if (view === 'Search') { 
+      messages = this.props.searchResults
+    } else {
+      messages = this.props.messages[25 * page - 1] === undefined ? [] : this.props.messages.slice(25 * (page - 1), 25 * page);
+    }
 
     return (
       <div>
@@ -56,7 +70,7 @@ class EmailList extends React.Component {
             </Table>
 
             <Icon name="chevron left" onClick={() => { this.handlePageNav('back'); }} />
-              {page} / {Math.ceil(this.props.messages.length / 25)} 
+              {page} / {Math.floor(this.props.messages.length / 25)} 
             <Icon name="chevron right" onClick={() => { this.handlePageNav('forward'); }} />
           </div>
           )

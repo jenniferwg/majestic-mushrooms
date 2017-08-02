@@ -42,9 +42,9 @@ export const removeMessage = (messageId) => {
 };
 
 
-export const addMessages = (messages) => {
+export const appendMessages = (messages) => {
   return {
-    type:       'ADD_MESSAGES',
+    type:       'APPEND_MESSAGES',
     messages:   messages
   };
 };
@@ -181,3 +181,10 @@ export const setPage = (newPage) => {
     page:         newPage
   };
 };
+
+export const setOffset = (offset) => {
+  return {
+    type:         'SET_OFFSET',
+    offset:       offset
+  }
+}
